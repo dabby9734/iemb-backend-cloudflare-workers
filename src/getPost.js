@@ -26,6 +26,7 @@ function parseAttachments(iembHTML) {
       containerType,
     });
   }
+  return processedAttachements;
 }
 
 function parsePostContent(iembHTML) {
