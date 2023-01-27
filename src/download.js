@@ -4,14 +4,17 @@ export default async function downloadRoute(req, env, ctx) {
   if (req.method !== "POST")
     return new Response("Please use POST method", { status: 400 });
 
-  const { veriTokenCookie, authToken, sessionID, attachment } = { ...req.body };
+  const data = await req.json();
+  const veriTokenCookie = data.veriTokenCookie;
+  const authToken = data.authToken;
+  const sessionID = data.sessionID;
+  const attachment = data.attachment;
 
   if (!veriTokenCookie || !authToken || !sessionID || !attachment)
     return new Response("Missing parameters", { status: 400 });
 
   const response = await fetch(`https://iemb.hci.edu.sg/${attachment.url}`, {
     method: "GET",
-    mode: "no-cors",
     headers: {
       host: "iemb.hci.edu.sg",
       referer: `https://iemb.hci.edu.sg/Board/content/${attachment.fileID}?board=${attachment.boardID}&isArchived=False`,
@@ -36,13 +39,12 @@ export default async function downloadRoute(req, env, ctx) {
 
   const blob = await response.blob();
   // https://developer.mozilla.org/en-US/docs/Web/API/Blob/arrayBuffer
-  const blobArrayBuffer = await blob.arrayBuffer();
-  const fileBuffer = Buffer.from(blobArrayBuffer);
+  // const blobArrayBuffer = await blob.arrayBuffer();
+  // const fileBuffer = Buffer.from(blobArrayBuffer);
 
   // https://stackoverflow.com/questions/56430526/best-way-to-send-zip-file-as-response-in-azure-functions-using-node
-  return new Response(fileBuffer, {
+  return new Response(blob, {
     headers: {
-      "Access-Control-Allow-Origin": "*",
       "Content-Disposition": response.headers.get("content-disposition"),
       "Content-Type": response.headers.get("content-type"),
     },

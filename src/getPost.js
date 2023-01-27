@@ -2,7 +2,7 @@ const { parse } = require("node-html-parser");
 // const puppeteer = require("puppeteer");
 // const chrome = require("chrome-aws-lambda");
 
-function parseAttachments(iembHTML) {
+function parseAttachments(iembHTML, pid) {
   const attachements = iembHTML
     .toString()
     .matchAll(
@@ -11,16 +11,14 @@ function parseAttachments(iembHTML) {
 
   const processedAttachements = [];
   for (const attachment of attachements) {
-    const [_, fileName, fileType, fileID, boardID, containerType] = [
-      ...attachment,
-    ];
-    const url = `Board/showFile?t=${fileType}&ctype=${containerType}&id=${fileID}&file=${encodeURIComponent(
+    const [_, fileName, fileID, __, boardID, containerType] = [...attachment];
+    const url = `Board/showFile?t=2&ctype=${containerType}&id=${fileID}&file=${encodeURIComponent(
       fileName
     )}&boardId=${boardID}`;
     processedAttachements.push({
       url,
       fileName,
-      fileType,
+      fileType: 2,
       fileID,
       boardID,
       containerType,
@@ -138,7 +136,7 @@ export default async function getPostRoute(req, env, ctx) {
     });
 
   // ! GET ATTACHMENTS
-  const attachments = parseAttachments(iembHTML);
+  const attachments = parseAttachments(iembHTML, pid);
 
   // ! GET POST CONTENT
   const postContent = parsePostContent(iembHTML);

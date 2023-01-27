@@ -17,6 +17,15 @@ router.get("/getBoardArchived", getBoardArchivedRoute);
 router.get("/reply", replyRoute);
 router.get("/star", starRoute);
 router.post("/download", downloadRoute);
+router.options("*", function (req) {
+  return new Response("OK", {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    },
+  });
+});
 
 /*
 This is the last route we define, it will match anything that hasn't hit a route we've defined
