@@ -11,7 +11,7 @@ function parseAttachments(iembHTML) {
 
   const processedAttachements = [];
   for (const attachment of attachements) {
-    const [fileName, fileType, fileID, boardID, containerType] = [
+    const [_, fileName, fileType, fileID, boardID, containerType] = [
       ...attachment,
     ];
     const url = `Board/showFile?t=${fileType}&ctype=${containerType}&id=${fileID}&file=${encodeURIComponent(
