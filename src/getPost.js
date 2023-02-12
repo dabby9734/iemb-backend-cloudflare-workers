@@ -138,7 +138,9 @@ export default async function getPostRoute(req, env, ctx) {
 
   cf_emails.forEach((cf_email) => {
     let encodedString = cf_email.getAttribute("data-cfemail");
-    cf_email.innerHTML = decodeCfEmail(encodedString);
+    let decodedString = decodeCfEmail(encodedString);
+    cf_email.innerHTML = decodedString;
+    cf_email.setAttribute("href", `mailto:${decodedString}`);
   });
 
   //   check if we are stuck on the sign in page (i.e. needs a token refresh)
