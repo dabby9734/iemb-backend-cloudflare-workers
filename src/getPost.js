@@ -2,7 +2,7 @@ const { parse } = require("node-html-parser");
 // const puppeteer = require("puppeteer");
 // const chrome = require("chrome-aws-lambda");
 
-function parseAttachments(iembHTML, pid) {
+function parseAttachments(iembHTML) {
   const attachements = iembHTML
     .toString()
     .matchAll(
@@ -88,6 +88,18 @@ function parseReply(iembHTML) {
   };
 }
 
+function decodeCfEmail(encodedString) {
+  var email = "",
+    r = parseInt(encodedString.substr(0, 2), 16),
+    n,
+    i;
+  for (n = 2; encodedString.length - n; n += 2) {
+    i = parseInt(encodedString.substr(n, 2), 16) ^ r;
+    email += String.fromCharCode(i);
+  }
+  return email;
+}
+
 export default async function getPostRoute(req, env, ctx) {
   const url = new URL(req.url);
   const veriToken = url.searchParams.get("veriToken");
@@ -121,7 +133,13 @@ export default async function getPostRoute(req, env, ctx) {
     });
 
   // parse the html
-  const iembHTML = parse(await response.text());
+  let iembHTML = parse(await response.text());
+  let cf_emails = iembHTML.querySelectorAll(".__cf_email__");
+
+  cf_emails.forEach((cf_email) => {
+    let encodedString = cf_email.getAttribute("data-cfemail");
+    cf_email.innerHTML = decodeCfEmail(encodedString);
+  });
 
   //   check if we are stuck on the sign in page (i.e. needs a token refresh)
   const needsTokenRefresh = iembHTML.querySelector(".login-page");
@@ -136,7 +154,7 @@ export default async function getPostRoute(req, env, ctx) {
     });
 
   // ! GET ATTACHMENTS
-  const attachments = parseAttachments(iembHTML, pid);
+  const attachments = parseAttachments(iembHTML);
 
   // ! GET POST CONTENT
   const postContent = parsePostContent(iembHTML);
