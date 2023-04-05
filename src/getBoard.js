@@ -1,4 +1,17 @@
 const { parse } = require("node-html-parser");
+
+function decodeCfEmail(encodedString) {
+  var email = "",
+    r = parseInt(encodedString.substr(0, 2), 16),
+    n,
+    i;
+  for (n = 2; encodedString.length - n; n += 2) {
+    i = parseInt(encodedString.substr(n, 2), 16) ^ r;
+    email += String.fromCharCode(i);
+  }
+  return email;
+}
+
 export default async function getBoardRoute(req, env, ctx) {
   const url = new URL(req.url);
   const veriToken = url.searchParams.get("veriToken");
@@ -44,6 +57,14 @@ export default async function getBoardRoute(req, env, ctx) {
 
   // parse the html
   const iembHTML = parse(await response.text());
+  let cf_emails = iembHTML.querySelectorAll(".__cf_email__");
+
+  cf_emails.forEach((cf_email) => {
+    let encodedString = cf_email.getAttribute("data-cfemail");
+    let decodedString = decodeCfEmail(encodedString);
+    cf_email.innerHTML = decodedString;
+    // cf_email.setAttribute("href", `mailto:${decodedString}`);
+  });
 
   // check if we are stuck on the sign in page (i.e. needs a token refresh)
   const needsTokenRefresh = iembHTML.querySelector(".login-page");
